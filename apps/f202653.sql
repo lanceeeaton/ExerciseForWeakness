@@ -33,7 +33,7 @@ prompt APPLICATION 202653 - EFW
 -- Application Export:
 --   Application:     202653
 --   Name:            EFW
---   Date and Time:   14:21 Tuesday March 31, 2026
+--   Date and Time:   16:11 Tuesday March 31, 2026
 --   Exported By:     LANCE.E.EATON@GMAIL.COM
 --   Flashback:       0
 --   Export Type:     Application Export
@@ -57,7 +57,7 @@ prompt APPLICATION 202653 - EFW
 --       User Interface:
 --         Themes:                 1
 --         Templates:
---         LOVs:                   3
+--         LOVs:                   4
 --       PWA:
 --       Globalization:
 --       Reports:
@@ -110,7 +110,7 @@ wwv_imp_workspace.create_flow(
 ,p_substitution_value_01=>'EFW'
 ,p_file_prefix => nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_files_version=>12
-,p_version_scn=>15750344690945
+,p_version_scn=>15750384233094
 ,p_print_server_type=>'INSTANCE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
@@ -161,14 +161,14 @@ wwv_flow_imp_shared.create_list(
  p_id=>wwv_flow_imp.id(153279498885857793357)
 ,p_name=>'Navigation Menu'
 ,p_list_status=>'PUBLIC'
-,p_version_scn=>15750343147706
+,p_version_scn=>15750384233093
 );
 wwv_flow_imp_shared.create_list_item(
  p_id=>wwv_flow_imp.id(153285238259098646887)
 ,p_list_item_display_sequence=>10
 ,p_list_item_link_text=>'Filter Exercises'
 ,p_list_item_link_target=>'f?p=&APP_ID.:10:&SESSION.::&DEBUG.::::'
-,p_list_item_icon=>'fa-home'
+,p_list_item_icon=>'fa-filter'
 ,p_list_item_current_type=>'COLON_DELIMITED_PAGE_LIST'
 ,p_list_item_current_for_pages=>'10'
 );
@@ -1156,6 +1156,62 @@ wwv_flow_imp_shared.create_list_of_values(
 ,p_default_sort_column_name=>'NAME'
 ,p_default_sort_direction=>'ASC'
 ,p_version_scn=>15750088600193
+);
+end;
+/
+prompt --application/shared_components/user_interface/lovs/efw_weakness_detail
+begin
+wwv_flow_imp_shared.create_list_of_values(
+ p_id=>wwv_flow_imp.id(153496429459031999893)
+,p_lov_name=>'EFW_WEAKNESS_DETAIL'
+,p_lov_query=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'select distinct',
+'    initcap(w.name) || '' ('' || initcap(ml.name) || '')'' d',
+'    , initcap(ml.name) main_lift',
+'    , initcap(w.name) weakness',
+'    , etf.weakness_id r',
+'from efw_exercise_to_fix_weakness etf',
+'join efw_weakness w on etf.weakness_id = w.weakness_id',
+'join efw_main_lift ml on w.main_lift_id = ml.main_lift_id'))
+,p_source_type=>'SQL'
+,p_location=>'LOCAL'
+,p_return_column_name=>'R'
+,p_display_column_name=>'D'
+,p_group_sort_direction=>'ASC'
+,p_default_sort_column_name=>'MAIN_LIFT'
+,p_default_sort_direction=>'ASC'
+,p_version_scn=>15750381134317
+);
+wwv_flow_imp_shared.create_list_of_values_cols(
+ p_id=>wwv_flow_imp.id(153497385014354019150)
+,p_query_column_name=>'R'
+,p_display_sequence=>10
+,p_data_type=>'NUMBER'
+,p_is_visible=>'N'
+,p_is_searchable=>'N'
+);
+wwv_flow_imp_shared.create_list_of_values_cols(
+ p_id=>wwv_flow_imp.id(153497385337943019150)
+,p_query_column_name=>'D'
+,p_heading=>'D'
+,p_display_sequence=>20
+,p_data_type=>'VARCHAR2'
+,p_is_visible=>'N'
+,p_is_searchable=>'N'
+);
+wwv_flow_imp_shared.create_list_of_values_cols(
+ p_id=>wwv_flow_imp.id(153497385769601019150)
+,p_query_column_name=>'MAIN_LIFT'
+,p_heading=>'Main Lift'
+,p_display_sequence=>30
+,p_data_type=>'VARCHAR2'
+);
+wwv_flow_imp_shared.create_list_of_values_cols(
+ p_id=>wwv_flow_imp.id(153497386110929019151)
+,p_query_column_name=>'WEAKNESS'
+,p_heading=>'Weakness'
+,p_display_sequence=>40
+,p_data_type=>'VARCHAR2'
 );
 end;
 /
@@ -4246,11 +4302,24 @@ wwv_flow_imp_page.create_page(
 wwv_flow_imp_page.create_page_plug(
  p_id=>wwv_flow_imp.id(153280993832869797884)
 ,p_plug_name=>'Exercise'
-,p_region_template_options=>'#DEFAULT#'
 ,p_plug_display_sequence=>10
-,p_query_type=>'TABLE'
-,p_query_table=>'EFW_EXERCISE'
-,p_include_rowid_column=>false
+,p_query_type=>'SQL'
+,p_plug_source=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'with exercise_util as (',
+'    select',
+'        count(1) utilization_count',
+'        , etf.exercise_id',
+'    from efw_exercise_to_fix_weakness etf',
+'    group by etf.exercise_id',
+')',
+'select',
+'    e.exercise_id',
+'    , e.name',
+'    , nvl(eu.utilization_count, 0) utilization_count',
+'from efw_exercise e',
+'left join exercise_util eu on e.exercise_id = eu.exercise_id',
+'',
+' '))
 ,p_plug_source_type=>'NATIVE_IR'
 ,p_prn_page_header=>'Exercise'
 );
@@ -4298,49 +4367,14 @@ wwv_flow_imp_page.create_worksheet_column(
 ,p_use_as_row_header=>'N'
 );
 wwv_flow_imp_page.create_worksheet_column(
- p_id=>wwv_flow_imp.id(153280995456457797886)
-,p_db_column_name=>'CREATED_ON'
-,p_display_order=>3
-,p_column_identifier=>'C'
-,p_column_label=>'Created On'
-,p_column_type=>'DATE'
-,p_heading_alignment=>'LEFT'
-,p_format_mask=>'SINCE'
-,p_tz_dependent=>'Y'
-,p_use_as_row_header=>'N'
-);
-wwv_flow_imp_page.create_worksheet_column(
- p_id=>wwv_flow_imp.id(153280995825501797886)
-,p_db_column_name=>'CREATED_BY'
-,p_display_order=>4
-,p_column_identifier=>'D'
-,p_column_label=>'Created By'
-,p_column_type=>'STRING'
-,p_heading_alignment=>'LEFT'
-,p_tz_dependent=>'N'
-,p_use_as_row_header=>'N'
-);
-wwv_flow_imp_page.create_worksheet_column(
- p_id=>wwv_flow_imp.id(153280996259661797887)
-,p_db_column_name=>'UPDATED_ON'
-,p_display_order=>5
-,p_column_identifier=>'E'
-,p_column_label=>'Updated On'
-,p_column_type=>'DATE'
-,p_heading_alignment=>'LEFT'
-,p_format_mask=>'SINCE'
-,p_tz_dependent=>'Y'
-,p_use_as_row_header=>'N'
-);
-wwv_flow_imp_page.create_worksheet_column(
- p_id=>wwv_flow_imp.id(153280996682343797887)
-,p_db_column_name=>'UPDATED_BY'
-,p_display_order=>6
-,p_column_identifier=>'F'
-,p_column_label=>'Updated By'
-,p_column_type=>'STRING'
-,p_heading_alignment=>'LEFT'
-,p_tz_dependent=>'N'
+ p_id=>wwv_flow_imp.id(139398456494423435437)
+,p_db_column_name=>'UTILIZATION_COUNT'
+,p_display_order=>12
+,p_column_identifier=>'G'
+,p_column_label=>'Utilization Count'
+,p_column_type=>'NUMBER'
+,p_heading_alignment=>'RIGHT'
+,p_column_alignment=>'RIGHT'
 ,p_use_as_row_header=>'N'
 );
 wwv_flow_imp_page.create_worksheet_rpt(
@@ -4350,7 +4384,7 @@ wwv_flow_imp_page.create_worksheet_rpt(
 ,p_report_alias=>'1532810448'
 ,p_status=>'PUBLIC'
 ,p_is_default=>'Y'
-,p_report_columns=>'NAME'
+,p_report_columns=>'NAME:UTILIZATION_COUNT:'
 ,p_sort_column_1=>'NAME'
 ,p_sort_direction_1=>'ASC'
 );
@@ -4441,6 +4475,8 @@ wwv_flow_imp_page.create_page_plug(
 ,p_plug_display_sequence=>10
 ,p_plug_display_point=>'SUB_REGIONS'
 ,p_location=>null
+,p_plug_display_condition_type=>'ITEM_IS_NOT_NULL'
+,p_plug_display_when_condition=>'P7_EXERCISE_ID'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'expand_shortcuts', 'N',
   'output_as', 'HTML')).to_clob
@@ -4886,7 +4922,6 @@ wwv_flow_imp_page.create_worksheet(
 ,p_name=>'Exercise To Fix Weakness'
 ,p_max_row_count_message=>'The maximum row count for this report is #MAX_ROW_COUNT# rows.  Please apply a filter to reduce the number of records in your query.'
 ,p_no_data_found_message=>'No data found.'
-,p_base_pk1=>'EXERCISE_TO_FIX_WEAKNESS_ID'
 ,p_pagination_type=>'ROWS_X_TO_Y'
 ,p_pagination_display_pos=>'BOTTOM_RIGHT'
 ,p_report_list_mode=>'TABS'
@@ -5150,23 +5185,34 @@ wwv_flow_imp_page.create_page_item(
 ,p_item_sequence=>20
 ,p_item_plug_id=>wwv_flow_imp.id(153281001247871798269)
 ,p_item_source_plug_id=>wwv_flow_imp.id(153281001247871798269)
-,p_use_cache_before_default=>'NO'
 ,p_prompt=>'Weakness'
 ,p_source=>'WEAKNESS_ID'
 ,p_source_type=>'REGION_SOURCE_COLUMN'
-,p_display_as=>'NATIVE_SELECT_LIST'
-,p_named_lov=>'EFW_WEAKNESS.NAME'
+,p_display_as=>'NATIVE_POPUP_LOV'
+,p_named_lov=>'EFW_WEAKNESS_DETAIL'
+,p_lov=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'select distinct',
+'    initcap(w.name) || '' ('' || initcap(ml.name) || '')'' d',
+'    , initcap(ml.name) main_lift',
+'    , initcap(w.name) weakness',
+'    , etf.weakness_id r',
+'from efw_exercise_to_fix_weakness etf',
+'join efw_weakness w on etf.weakness_id = w.weakness_id',
+'join efw_main_lift ml on w.main_lift_id = ml.main_lift_id'))
 ,p_lov_display_null=>'YES'
-,p_cSize=>32
-,p_cMaxlength=>255
-,p_cHeight=>1
-,p_label_alignment=>'RIGHT'
+,p_cSize=>30
 ,p_field_template=>1609122147107268652
 ,p_item_template_options=>'#DEFAULT#'
 ,p_is_persistent=>'N'
+,p_lov_display_extra=>'NO'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
-  'execute_validations', 'Y',
-  'page_action_on_selection', 'NONE')).to_clob
+  'case_sensitive', 'N',
+  'display_as', 'POPUP',
+  'fetch_on_search', 'Y',
+  'initial_fetch', 'FIRST_ROWSET',
+  'manual_entry', 'N',
+  'match_type', 'CONTAINS',
+  'min_chars', '0')).to_clob
 );
 wwv_flow_imp_page.create_page_item(
  p_id=>wwv_flow_imp.id(153281002609307798271)
@@ -5176,23 +5222,25 @@ wwv_flow_imp_page.create_page_item(
 ,p_item_sequence=>30
 ,p_item_plug_id=>wwv_flow_imp.id(153281001247871798269)
 ,p_item_source_plug_id=>wwv_flow_imp.id(153281001247871798269)
-,p_use_cache_before_default=>'NO'
 ,p_prompt=>'Exercise'
 ,p_source=>'EXERCISE_ID'
 ,p_source_type=>'REGION_SOURCE_COLUMN'
-,p_display_as=>'NATIVE_SELECT_LIST'
+,p_display_as=>'NATIVE_POPUP_LOV'
 ,p_named_lov=>'EFW_EXERCISE.NAME'
 ,p_lov_display_null=>'YES'
-,p_cSize=>32
-,p_cMaxlength=>255
-,p_cHeight=>1
-,p_label_alignment=>'RIGHT'
+,p_cSize=>30
 ,p_field_template=>1609122147107268652
 ,p_item_template_options=>'#DEFAULT#'
 ,p_is_persistent=>'N'
+,p_lov_display_extra=>'YES'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
-  'execute_validations', 'Y',
-  'page_action_on_selection', 'NONE')).to_clob
+  'case_sensitive', 'N',
+  'display_as', 'POPUP',
+  'fetch_on_search', 'Y',
+  'initial_fetch', 'FIRST_ROWSET',
+  'manual_entry', 'N',
+  'match_type', 'CONTAINS',
+  'min_chars', '0')).to_clob
 );
 wwv_flow_imp_page.create_page_item(
  p_id=>wwv_flow_imp.id(153281003375141798272)
