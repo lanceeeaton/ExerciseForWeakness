@@ -33,12 +33,12 @@ prompt APPLICATION 202653 - EFW
 -- Application Export:
 --   Application:     202653
 --   Name:            EFW
---   Date and Time:   14:13 Tuesday March 31, 2026
+--   Date and Time:   14:21 Tuesday March 31, 2026
 --   Exported By:     LANCE.E.EATON@GMAIL.COM
 --   Flashback:       0
 --   Export Type:     Application Export
 --     Pages:                     12
---       Items:                   35
+--       Items:                   34
 --       Validations:              8
 --       Processes:               16
 --       Regions:                 24
@@ -110,7 +110,7 @@ wwv_imp_workspace.create_flow(
 ,p_substitution_value_01=>'EFW'
 ,p_file_prefix => nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_files_version=>12
-,p_version_scn=>15750343597976
+,p_version_scn=>15750344690945
 ,p_print_server_type=>'INSTANCE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
@@ -5589,24 +5589,6 @@ wwv_flow_imp_page.create_page_item(
 ,p_fc_initial_chart=>false
 ,p_fc_actions_filter=>true
 ,p_fc_display_as=>'INLINE'
-);
-wwv_flow_imp_page.create_page_item(
- p_id=>wwv_flow_imp.id(139398456300663435436)
-,p_name=>'P10_NEW'
-,p_item_sequence=>30
-,p_item_default=>':APP_USER'
-,p_item_default_type=>'EXPRESSION'
-,p_item_default_language=>'PLSQL'
-,p_prompt=>'New'
-,p_display_as=>'NATIVE_TEXT_FIELD'
-,p_cSize=>30
-,p_field_template=>1609121967514267634
-,p_item_template_options=>'#DEFAULT#'
-,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
-  'disabled', 'N',
-  'submit_when_enter_pressed', 'N',
-  'subtype', 'TEXT',
-  'trim_spaces', 'BOTH')).to_clob
 );
 wwv_flow_imp_page.create_page_item(
  p_id=>wwv_flow_imp.id(153285239992696646891)
