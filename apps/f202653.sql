@@ -33,15 +33,15 @@ prompt APPLICATION 202653 - EFW
 -- Application Export:
 --   Application:     202653
 --   Name:            EFW
---   Date and Time:   02:46 Tuesday March 31, 2026
+--   Date and Time:   14:13 Tuesday March 31, 2026
 --   Exported By:     LANCE.E.EATON@GMAIL.COM
 --   Flashback:       0
 --   Export Type:     Application Export
 --     Pages:                     12
---       Items:                   34
+--       Items:                   35
 --       Validations:              8
 --       Processes:               16
---       Regions:                 21
+--       Regions:                 24
 --       Buttons:                 22
 --       Dynamic Actions:          8
 --     Shared Components:
@@ -52,7 +52,7 @@ prompt APPLICATION 202653 - EFW
 --         Breadcrumbs:            1
 --           Entries:              6
 --       Security:
---         Authentication:         1
+--         Authentication:         2
 --         Authorization:          1
 --       User Interface:
 --         Themes:                 1
@@ -110,7 +110,7 @@ wwv_imp_workspace.create_flow(
 ,p_substitution_value_01=>'EFW'
 ,p_file_prefix => nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_files_version=>12
-,p_version_scn=>15750114013544
+,p_version_scn=>15750343597976
 ,p_print_server_type=>'INSTANCE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
@@ -143,13 +143,25 @@ wwv_flow_imp_shared.create_user_interface(
 );
 end;
 /
+prompt --workspace/credentials/google
+begin
+wwv_imp_workspace.create_credential(
+ p_id=>wwv_flow_imp.id(153469447220995351407)
+,p_name=>'GOOGLE'
+,p_static_id=>'google_authentication'
+,p_authentication_type=>'OAUTH2_CLIENT_CREDENTIALS'
+,p_scope=>'profile'
+,p_prompt_on_install=>true
+);
+end;
+/
 prompt --application/shared_components/navigation/lists/navigation_menu
 begin
 wwv_flow_imp_shared.create_list(
  p_id=>wwv_flow_imp.id(153279498885857793357)
 ,p_name=>'Navigation Menu'
 ,p_list_status=>'PUBLIC'
-,p_version_scn=>15750101282505
+,p_version_scn=>15750343147706
 );
 wwv_flow_imp_shared.create_list_item(
  p_id=>wwv_flow_imp.id(153285238259098646887)
@@ -166,6 +178,7 @@ wwv_flow_imp_shared.create_list_item(
 ,p_list_item_link_text=>'Data Entry'
 ,p_list_item_link_target=>'f?p=&APP_ID.:1:&SESSION.::&DEBUG.::::'
 ,p_list_item_icon=>'fa-gears'
+,p_security_scheme=>wwv_flow_imp.id(153279503527353793366)
 ,p_list_item_current_type=>'TARGET_PAGE'
 );
 wwv_flow_imp_shared.create_list_item(
@@ -1069,10 +1082,11 @@ begin
 wwv_flow_imp_shared.create_security_scheme(
  p_id=>wwv_flow_imp.id(153279503527353793366)
 ,p_name=>'Administration Rights'
-,p_scheme_type=>'NATIVE_FUNCTION_BODY'
-,p_attribute_01=>'return true;'
+,p_scheme_type=>'NATIVE_ITEM_EQUALS_VALUE'
+,p_attribute_01=>'APP_USER'
+,p_attribute_02=>'lance.e.eaton@gmail.com'
 ,p_error_message=>'Insufficient privileges, user is not an Administrator'
-,p_version_scn=>15750088520430
+,p_version_scn=>15750343597972
 ,p_caching=>'BY_USER_BY_PAGE_VIEW'
 );
 end;
@@ -3098,6 +3112,27 @@ wwv_flow_imp_shared.create_authentication(
 );
 end;
 /
+prompt --application/shared_components/security/authentications/google
+begin
+wwv_flow_imp_shared.create_authentication(
+ p_id=>wwv_flow_imp.id(153469792451571003360)
+,p_name=>'Google'
+,p_scheme_type=>'NATIVE_SOCIAL'
+,p_attribute_01=>wwv_flow_imp.id(153469447220995351407)
+,p_attribute_02=>'OPENID_CONNECT'
+,p_attribute_03=>'https://accounts.google.com/.well-known/openid-configuration'
+,p_attribute_07=>'profile,openid,email'
+,p_attribute_09=>'#email#'
+,p_attribute_11=>'N'
+,p_attribute_13=>'Y'
+,p_invalid_session_type=>'LOGIN'
+,p_use_secure_cookie_yn=>'N'
+,p_ras_mode=>0
+,p_switch_in_session_yn=>'Y'
+,p_version_scn=>15750342003384
+);
+end;
+/
 prompt --application/user_interfaces/combined_files
 begin
 null;
@@ -3125,6 +3160,7 @@ wwv_flow_imp_page.create_page(
 ,p_step_title=>'EFW'
 ,p_autocomplete_on_off=>'OFF'
 ,p_page_template_options=>'#DEFAULT#'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_protection_level=>'C'
 ,p_page_component_map=>'06'
 );
@@ -3133,13 +3169,14 @@ wwv_flow_imp_page.create_page_plug(
 ,p_plug_name=>'Page Navigation'
 ,p_region_template_options=>'#DEFAULT#'
 ,p_component_template_options=>'#DEFAULT#:u-colors:t-Cards--featured t-Cards--block force-fa-lg:t-Cards--displayIcons:t-Cards--4cols:t-Cards--hideBody:t-Cards--animColorFill'
-,p_escape_on_http_output=>'Y'
 ,p_plug_template=>4501440665235496320
 ,p_plug_display_sequence=>30
+,p_location=>null
 ,p_list_id=>wwv_flow_imp.id(153281070367634798348)
 ,p_plug_source_type=>'NATIVE_LIST'
 ,p_list_template_id=>2886769488667748277
 ,p_plug_query_num_rows=>15
+,p_plug_required_role=>wwv_flow_imp.id(153279503527353793366)
 );
 end;
 /
@@ -3152,6 +3189,7 @@ wwv_flow_imp_page.create_page(
 ,p_step_title=>'Main Lift'
 ,p_autocomplete_on_off=>'OFF'
 ,p_page_template_options=>'#DEFAULT#'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_protection_level=>'C'
 ,p_help_text=>wwv_flow_string.join(wwv_flow_t_varchar2(
 '<p>To find data enter a search term into the search dialog, or click on the column headings to limit the records returned.</p>',
@@ -3335,6 +3373,7 @@ wwv_flow_imp_page.create_page(
 ,p_autocomplete_on_off=>'OFF'
 ,p_step_template=>1661186590416509825
 ,p_page_template_options=>'#DEFAULT#:js-dialog-class-t-Drawer--pullOutEnd'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_dialog_chained=>'N'
 ,p_dialog_resizable=>'Y'
 ,p_protection_level=>'C'
@@ -3649,6 +3688,7 @@ wwv_flow_imp_page.create_page(
 ,p_step_title=>'Weakness'
 ,p_autocomplete_on_off=>'OFF'
 ,p_page_template_options=>'#DEFAULT#'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_protection_level=>'C'
 ,p_help_text=>wwv_flow_string.join(wwv_flow_t_varchar2(
 '<p>To find data enter a search term into the search dialog, or click on the column headings to limit the records returned.</p>',
@@ -3847,6 +3887,7 @@ wwv_flow_imp_page.create_page(
 ,p_autocomplete_on_off=>'OFF'
 ,p_step_template=>1661186590416509825
 ,p_page_template_options=>'#DEFAULT#:js-dialog-class-t-Drawer--pullOutEnd'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_dialog_chained=>'N'
 ,p_dialog_resizable=>'Y'
 ,p_protection_level=>'C'
@@ -4187,6 +4228,7 @@ wwv_flow_imp_page.create_page(
 ,p_step_title=>'Exercise'
 ,p_autocomplete_on_off=>'OFF'
 ,p_page_template_options=>'#DEFAULT#'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_protection_level=>'C'
 ,p_help_text=>wwv_flow_string.join(wwv_flow_t_varchar2(
 '<p>To find data enter a search term into the search dialog, or click on the column headings to limit the records returned.</p>',
@@ -4370,6 +4412,7 @@ wwv_flow_imp_page.create_page(
 ,p_autocomplete_on_off=>'OFF'
 ,p_step_template=>1661186590416509825
 ,p_page_template_options=>'#DEFAULT#:js-dialog-class-t-Drawer--pullOutEnd'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_dialog_chained=>'N'
 ,p_dialog_resizable=>'Y'
 ,p_protection_level=>'C'
@@ -4388,6 +4431,128 @@ wwv_flow_imp_page.create_page_plug(
 ,p_edit_operations=>'i:u:d'
 ,p_lost_update_check_type=>'VALUES'
 ,p_plug_source_type=>'NATIVE_FORM'
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(139398456169398435434)
+,p_plug_name=>'Utilization'
+,p_parent_plug_id=>wwv_flow_imp.id(153280984033107797873)
+,p_region_template_options=>'#DEFAULT#:t-Region--noPadding:t-Region--scrollBody'
+,p_plug_template=>4072358936313175081
+,p_plug_display_sequence=>10
+,p_plug_display_point=>'SUB_REGIONS'
+,p_location=>null
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'expand_shortcuts', 'N',
+  'output_as', 'HTML')).to_clob
+);
+wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(139398455229613435425)
+,p_plug_name=>'Report'
+,p_parent_plug_id=>wwv_flow_imp.id(139398456169398435434)
+,p_region_template_options=>'#DEFAULT#:t-IRR-region--hideHeader js-addHiddenHeadingRoleDesc'
+,p_plug_template=>2100526641005906379
+,p_plug_display_sequence=>10
+,p_plug_display_point=>'SUB_REGIONS'
+,p_query_type=>'SQL'
+,p_plug_source=>wwv_flow_string.join(wwv_flow_t_varchar2(
+'select',
+'    initcap(ml.name) main_lift',
+'    , initcap(w.name) weakness',
+'  from efw_exercise_to_fix_weakness etf',
+'  join efw_weakness w on etf.weakness_id = w.weakness_id',
+'  join efw_main_lift ml on w.main_lift_id = ml.main_lift_id',
+'  where etf.exercise_id = :P7_EXERCISE_ID'))
+,p_plug_source_type=>'NATIVE_IR'
+,p_ajax_items_to_submit=>'P7_EXERCISE_ID'
+,p_prn_content_disposition=>'ATTACHMENT'
+,p_prn_units=>'INCHES'
+,p_prn_paper_size=>'LETTER'
+,p_prn_width=>11
+,p_prn_height=>8.5
+,p_prn_orientation=>'HORIZONTAL'
+,p_prn_page_header_font_color=>'#000000'
+,p_prn_page_header_font_family=>'Helvetica'
+,p_prn_page_header_font_weight=>'normal'
+,p_prn_page_header_font_size=>'12'
+,p_prn_page_footer_font_color=>'#000000'
+,p_prn_page_footer_font_family=>'Helvetica'
+,p_prn_page_footer_font_weight=>'normal'
+,p_prn_page_footer_font_size=>'12'
+,p_prn_header_bg_color=>'#EEEEEE'
+,p_prn_header_font_color=>'#000000'
+,p_prn_header_font_family=>'Helvetica'
+,p_prn_header_font_weight=>'bold'
+,p_prn_header_font_size=>'10'
+,p_prn_body_bg_color=>'#FFFFFF'
+,p_prn_body_font_color=>'#000000'
+,p_prn_body_font_family=>'Helvetica'
+,p_prn_body_font_weight=>'normal'
+,p_prn_body_font_size=>'10'
+,p_prn_border_width=>.5
+,p_prn_page_header_alignment=>'CENTER'
+,p_prn_page_footer_alignment=>'CENTER'
+,p_prn_border_color=>'#666666'
+);
+wwv_flow_imp_page.create_worksheet(
+ p_id=>wwv_flow_imp.id(139398455820877435431)
+,p_max_row_count=>'1000000'
+,p_pagination_type=>'ROWS_X_TO_Y'
+,p_pagination_display_pos=>'BOTTOM_RIGHT'
+,p_show_search_bar=>'N'
+,p_lazy_loading=>false
+,p_show_detail_link=>'N'
+,p_enable_mail_download=>'Y'
+,p_owner=>'LANCE.E.EATON@GMAIL.COM'
+,p_internal_uid=>139398455820877435431
+);
+wwv_flow_imp_page.create_worksheet_column(
+ p_id=>wwv_flow_imp.id(139398455991870435432)
+,p_db_column_name=>'MAIN_LIFT'
+,p_display_order=>10
+,p_column_identifier=>'A'
+,p_column_label=>'Main Lift'
+,p_allow_sorting=>'N'
+,p_allow_filtering=>'N'
+,p_allow_highlighting=>'N'
+,p_allow_ctrl_breaks=>'N'
+,p_allow_aggregations=>'N'
+,p_allow_computations=>'N'
+,p_allow_charting=>'N'
+,p_allow_group_by=>'N'
+,p_allow_pivot=>'N'
+,p_allow_hide=>'N'
+,p_column_type=>'STRING'
+,p_heading_alignment=>'LEFT'
+,p_use_as_row_header=>'N'
+);
+wwv_flow_imp_page.create_worksheet_column(
+ p_id=>wwv_flow_imp.id(139398456086576435433)
+,p_db_column_name=>'WEAKNESS'
+,p_display_order=>20
+,p_column_identifier=>'B'
+,p_column_label=>'Weakness'
+,p_allow_sorting=>'N'
+,p_allow_filtering=>'N'
+,p_allow_highlighting=>'N'
+,p_allow_ctrl_breaks=>'N'
+,p_allow_aggregations=>'N'
+,p_allow_computations=>'N'
+,p_allow_charting=>'N'
+,p_allow_group_by=>'N'
+,p_allow_pivot=>'N'
+,p_allow_hide=>'N'
+,p_column_type=>'STRING'
+,p_heading_alignment=>'LEFT'
+,p_use_as_row_header=>'N'
+);
+wwv_flow_imp_page.create_worksheet_rpt(
+ p_id=>wwv_flow_imp.id(153451583715752484626)
+,p_application_user=>'APXWS_DEFAULT'
+,p_report_seq=>10
+,p_report_alias=>'1534515838'
+,p_status=>'PUBLIC'
+,p_is_default=>'Y'
+,p_report_columns=>'MAIN_LIFT:WEAKNESS'
 );
 wwv_flow_imp_page.create_page_plug(
  p_id=>wwv_flow_imp.id(153280989371732797879)
@@ -4684,6 +4849,7 @@ wwv_flow_imp_page.create_page(
 ,p_step_title=>'Exercise To Fix Weakness'
 ,p_autocomplete_on_off=>'OFF'
 ,p_page_template_options=>'#DEFAULT#'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_protection_level=>'C'
 ,p_help_text=>wwv_flow_string.join(wwv_flow_t_varchar2(
 '<p>To find data enter a search term into the search dialog, or click on the column headings to limit the records returned.</p>',
@@ -4860,6 +5026,7 @@ wwv_flow_imp_page.create_page(
 ,p_autocomplete_on_off=>'OFF'
 ,p_step_template=>1661186590416509825
 ,p_page_template_options=>'#DEFAULT#:js-dialog-class-t-Drawer--pullOutEnd'
+,p_required_role=>wwv_flow_imp.id(153279503527353793366)
 ,p_dialog_chained=>'N'
 ,p_dialog_resizable=>'Y'
 ,p_protection_level=>'C'
@@ -5409,7 +5576,8 @@ wwv_flow_imp_page.create_page_item(
 ,p_named_lov=>'EFW_EXERCISE.NAME'
 ,p_item_template_options=>'#DEFAULT#'
 ,p_fc_show_label=>true
-,p_fc_collapsible=>false
+,p_fc_collapsible=>true
+,p_fc_initial_collapsed=>true
 ,p_fc_compute_counts=>true
 ,p_fc_show_counts=>true
 ,p_fc_zero_count_entries=>'H'
@@ -5421,6 +5589,24 @@ wwv_flow_imp_page.create_page_item(
 ,p_fc_initial_chart=>false
 ,p_fc_actions_filter=>true
 ,p_fc_display_as=>'INLINE'
+);
+wwv_flow_imp_page.create_page_item(
+ p_id=>wwv_flow_imp.id(139398456300663435436)
+,p_name=>'P10_NEW'
+,p_item_sequence=>30
+,p_item_default=>':APP_USER'
+,p_item_default_type=>'EXPRESSION'
+,p_item_default_language=>'PLSQL'
+,p_prompt=>'New'
+,p_display_as=>'NATIVE_TEXT_FIELD'
+,p_cSize=>30
+,p_field_template=>1609121967514267634
+,p_item_template_options=>'#DEFAULT#'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'disabled', 'N',
+  'submit_when_enter_pressed', 'N',
+  'subtype', 'TEXT',
+  'trim_spaces', 'BOTH')).to_clob
 );
 wwv_flow_imp_page.create_page_item(
  p_id=>wwv_flow_imp.id(153285239992696646891)
@@ -5458,11 +5644,25 @@ wwv_flow_imp_page.create_page(
 ,p_page_component_map=>'12'
 );
 wwv_flow_imp_page.create_page_plug(
+ p_id=>wwv_flow_imp.id(139398456272108435435)
+,p_plug_name=>'EFW'
+,p_region_template_options=>'#DEFAULT#:t-Login-region--headerTitle js-removeLandmark'
+,p_plug_template=>2674157997338192145
+,p_plug_display_sequence=>20
+,p_location=>null
+,p_region_image=>'#APP_FILES#icons/app-icon-512.png'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'expand_shortcuts', 'N',
+  'output_as', 'HTML')).to_clob
+);
+wwv_flow_imp_page.create_page_plug(
  p_id=>wwv_flow_imp.id(153279507485373793372)
 ,p_plug_name=>'EFW'
-,p_region_template_options=>'#DEFAULT#'
+,p_region_template_options=>'#DEFAULT#:t-Login-region--headerTitle js-removeLandmark'
 ,p_plug_template=>2674157997338192145
 ,p_plug_display_sequence=>10
+,p_location=>null
+,p_plug_display_condition_type=>'NEVER'
 ,p_region_image=>'#APP_FILES#icons/app-icon-512.png'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
   'expand_shortcuts', 'N',
@@ -5471,18 +5671,17 @@ wwv_flow_imp_page.create_page_plug(
 );
 wwv_flow_imp_page.create_page_button(
  p_id=>wwv_flow_imp.id(153279509585837793377)
-,p_button_sequence=>40
-,p_button_plug_id=>wwv_flow_imp.id(153279507485373793372)
-,p_button_name=>'LOGIN'
-,p_button_action=>'SUBMIT'
-,p_button_template_options=>'#DEFAULT#'
-,p_button_template_id=>4072362960822175091
+,p_button_sequence=>10
+,p_button_plug_id=>wwv_flow_imp.id(139398456272108435435)
+,p_button_name=>'GOOGLE'
+,p_button_action=>'REDIRECT_PAGE'
+,p_button_template_options=>'#DEFAULT#:t-Button--iconLeft'
+,p_button_template_id=>2082829544945815391
 ,p_button_is_hot=>'Y'
-,p_button_image_alt=>'Sign In'
+,p_button_image_alt=>'Continue with Google'
 ,p_button_position=>'NEXT'
-,p_button_alignment=>'LEFT'
-,p_grid_new_row=>'Y'
-,p_grid_new_column=>'Y'
+,p_button_redirect_url=>'f?p=&APP_ID.:10:&SESSION.:APEX_AUTHENTICATION=Google:&DEBUG.:10::'
+,p_icon_css_classes=>'fa-google'
 );
 wwv_flow_imp_page.create_page_item(
  p_id=>wwv_flow_imp.id(153279507934695793373)
